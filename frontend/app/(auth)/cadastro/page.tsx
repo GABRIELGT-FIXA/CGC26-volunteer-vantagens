@@ -29,7 +29,6 @@ function CadastroForm() {
   const phone = searchParams.get('phone') ?? '';
   const router = useRouter();
   const { login } = useAuthStore();
-  const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -77,13 +76,6 @@ function CadastroForm() {
       ...prev,
       teamIds: prev.teamIds[0] === id ? [] : [id],
     }));
-  }
-
-  function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    set('photo', file);
-    setPreviewPhoto(URL.createObjectURL(file));
   }
 
   async function openCamera() {
@@ -246,25 +238,15 @@ function CadastroForm() {
                   </div>
                 </div>
               ) : (
-                /* Botões de escolha */
-                <div className="grid grid-cols-2 gap-2">
-                  <Button type="button" variant="outline" className="flex-1 h-12" onClick={openCamera}>
-                    Tirar foto
+                <div className="space-y-2">
+                  <Button type="button" className="w-full h-12" onClick={openCamera}>
+                    {previewPhoto ? 'Tirar outra foto' : 'Tirar foto'}
                   </Button>
-                  <Button type="button" variant="outline" className="flex-1 h-12" onClick={() => fileRef.current?.click()}>
-                    Galeria
-                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    A foto de perfil deve ser tirada na hora pela câmera.
+                  </p>
                 </div>
               )}
-
-              {previewPhoto && !cameraOpen && (
-                <Button type="button" variant="ghost" size="sm" className="w-full text-muted-foreground text-xs"
-                  onClick={() => { set('photo', null); setPreviewPhoto(null); }}>
-                  Remover foto
-                </Button>
-              )}
-
-              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhoto} />
             </div>
           </>
         )}

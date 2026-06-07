@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 import type { WindowStatus } from '@/types';
-import { Camera, Upload, RefreshCw, Check } from 'lucide-react';
+import { Camera, RefreshCw, Check } from 'lucide-react';
 
 interface Props {
   taskId: string;
@@ -20,7 +20,6 @@ export function PhotoCapture({ taskId, type }: Props) {
   const { user } = useAuthStore();
   const router = useRouter();
   const qc = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -72,14 +71,6 @@ export function PhotoCapture({ taskId, type }: Props) {
       stopCamera();
     }, 'image/jpeg', 0.85);
   }, []);
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPhotoBlob(file);
-    setPreview(URL.createObjectURL(file));
-    setMode('preview');
-  }
 
   function reset() {
     setMode('idle');
@@ -167,16 +158,15 @@ export function PhotoCapture({ taskId, type }: Props) {
         </div>
       )}
 
-      {/* Camera / preview area */}
+      {/* Camera only — sem upload de arquivo */}
       {mode === 'idle' && (
         <div className="space-y-3">
           <Button className="w-full" size="lg" onClick={startCamera}>
             <Camera size={18} className="mr-2" /> Abrir câmera
           </Button>
-          <Button variant="outline" className="w-full" onClick={() => fileRef.current?.click()}>
-            <Upload size={18} className="mr-2" /> Enviar arquivo
-          </Button>
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFile} />
+          <p className="text-xs text-muted-foreground text-center">
+            A foto deve ser tirada na hora pela câmera.
+          </p>
         </div>
       )}
 
