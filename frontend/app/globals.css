@@ -1,0 +1,401 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ══════════════════════════════════════════
+   1. MASTER PALETTE — Tonal Scale
+══════════════════════════════════════════ */
+:root {
+  --crimson-pale:  #F2CECE;
+  --crimson-muted: #C47070;
+  --crimson-light: #E85555;
+  --crimson:       #A51C1C;
+  --crimson-dark:  #5C0A0A;
+
+  --burnt-pale:    #F5D5C4;
+  --burnt-muted:   #D4876A;
+  --burnt-light:   #E8784A;
+  --burnt:         #C94A1A;
+  --burnt-dark:    #7A2608;
+
+  --amber-pale:    #F5E8C4;
+  --amber-muted:   #D4AA6A;
+  --amber-light:   #E8A83A;
+  --amber:         #C07D1A;
+  --amber-dark:    #6B4200;
+
+  --lime-pale:     #F5F7D4;
+  --lime-muted:    #C8CC88;
+  --lime-light:    #EDF59A;
+  --lime:          #D9E05A;
+  --lime-dark:     #8A9400;
+
+  --teal-pale:     #C4E0DE;
+  --teal-muted:    #6AA09A;
+  --teal-light:    #52B0A6;
+  --teal:          #2E7A72;
+  --teal-dark:     #0F3D38;
+
+  --navy-pale:     #C4CDD8;
+  --navy-muted:    #4A6080;
+  --navy-light:    #2E4A6B;
+  --navy:          #0F1B2D;
+  --navy-dark:     #050A12;
+}
+
+/* ══════════════════════════════════════════
+   2. SEMANTIC TOKENS — Light Mode
+══════════════════════════════════════════ */
+[data-mode="light"] {
+  --bg-base:        var(--navy-pale);
+  --bg-surface:     #FFFFFF;
+  --bg-elevated:    #F8F8F6;
+  --bg-overlay:     rgba(15,27,45,0.06);
+
+  --text-primary:   var(--navy);
+  --text-secondary: var(--navy-muted);
+  --text-disabled:  var(--navy-pale);
+  --text-inverse:   #FFFFFF;
+
+  --border-default: var(--navy-pale);
+  --border-strong:  var(--navy-muted);
+
+  --shadow-sm: 0 1px 4px rgba(15,27,45,0.08);
+  --shadow-md: 0 4px 16px rgba(15,27,45,0.12);
+  --shadow-lg: 0 12px 40px rgba(15,27,45,0.16);
+
+  /* shadcn bridge — light */
+  --background:          #C4CDD8;
+  --foreground:          #0F1B2D;
+  --card:                #FFFFFF;
+  --card-foreground:     #0F1B2D;
+  --popover:             #FFFFFF;
+  --popover-foreground:  #0F1B2D;
+  --muted:               #F8F8F6;
+  --muted-foreground:    #4A6080;
+  --border:              #C4CDD8;
+  --input:               #C4CDD8;
+}
+
+/* ══════════════════════════════════════════
+   2. SEMANTIC TOKENS — Dark Mode (default)
+══════════════════════════════════════════ */
+[data-mode="dark"] {
+  --bg-base:        var(--navy-dark);
+  --bg-surface:     var(--navy);
+  --bg-elevated:    var(--navy-light);
+  --bg-overlay:     rgba(0,0,0,0.35);
+
+  --text-primary:   var(--navy-pale);
+  --text-secondary: var(--navy-muted);
+  --text-disabled:  var(--navy-light);
+  --text-inverse:   var(--navy-dark);
+
+  --border-default: var(--navy-light);
+  --border-strong:  var(--navy-muted);
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+
+  /* shadcn bridge — dark */
+  --background:          #050A12;
+  --foreground:          #C4CDD8;
+  --card:                #0F1B2D;
+  --card-foreground:     #C4CDD8;
+  --popover:             #0F1B2D;
+  --popover-foreground:  #C4CDD8;
+  --muted:               #2E4A6B;
+  --muted-foreground:    #4A6080;
+  --border:              #2E4A6B;
+  --input:               #2E4A6B;
+}
+
+/* ══════════════════════════════════════════
+   Fallback tokens — antes do data-mode ser aplicado
+══════════════════════════════════════════ */
+:root {
+  --background:          #050A12;
+  --foreground:          #C4CDD8;
+  --card:                #0F1B2D;
+  --card-foreground:     #C4CDD8;
+  --popover:             #0F1B2D;
+  --popover-foreground:  #C4CDD8;
+  --muted:               #2E4A6B;
+  --muted-foreground:    #4A6080;
+  --border:              #2E4A6B;
+  --input:               #2E4A6B;
+  --primary:             var(--brand-primary, #A51C1C);
+  --primary-foreground:  #fff;
+  --secondary:           var(--brand-secondary, #C94A1A);
+  --secondary-foreground:#fff;
+  --accent:              var(--brand-accent, #C07D1A);
+  --accent-foreground:   #fff;
+  --destructive:         #dc2626;
+  --destructive-foreground: #fff;
+  --ring:                var(--brand-primary, #A51C1C);
+  --radius:              0.625rem;
+}
+
+/* ══════════════════════════════════════════
+   TEMA × MODO — um único bloco cobre todos os 14 times
+   color-mix() tinge toda a UI com a cor do time
+══════════════════════════════════════════ */
+
+/* Tokens de interação — sempre refletem o time */
+[data-theme] {
+  --primary:             var(--brand-primary);
+  --primary-foreground:  #fff;
+  --secondary:           var(--brand-secondary, var(--brand-primary));
+  --secondary-foreground:#fff;
+  --accent:              var(--brand-accent, var(--brand-primary));
+  --accent-foreground:   #fff;
+  --ring:                var(--brand-primary);
+}
+
+/* Dark mode — superfícies fortemente tingidas com o brand */
+[data-theme][data-mode="dark"] {
+  --background:      color-mix(in srgb, var(--brand-primary) 14%, #07080C);
+  --card:            color-mix(in srgb, var(--brand-primary) 22%, #11151C);
+  --popover:         color-mix(in srgb, var(--brand-primary) 22%, #11151C);
+  --muted:           color-mix(in srgb, var(--brand-primary) 28%, #1A1F28);
+  --border:          color-mix(in srgb, var(--brand-primary) 45%, #1A1F28);
+  --input:           color-mix(in srgb, var(--brand-primary) 35%, #1A1F28);
+  --foreground:      color-mix(in srgb, var(--brand-primary) 12%, #EDEFF2);
+  --card-foreground: color-mix(in srgb, var(--brand-primary) 12%, #EDEFF2);
+  --popover-foreground: color-mix(in srgb, var(--brand-primary) 12%, #EDEFF2);
+  --muted-foreground: color-mix(in srgb, var(--brand-primary) 30%, #8A93A0);
+}
+
+/* Light mode — superfícies tingidas com o brand */
+[data-theme][data-mode="light"] {
+  --background:      color-mix(in srgb, var(--brand-primary) 10%, #F4F5F7);
+  --card:            color-mix(in srgb, var(--brand-primary)  6%, #FFFFFF);
+  --popover:         color-mix(in srgb, var(--brand-primary)  6%, #FFFFFF);
+  --muted:           color-mix(in srgb, var(--brand-primary) 14%, #ECEEF1);
+  --border:          color-mix(in srgb, var(--brand-primary) 30%, #D5D9DF);
+  --input:           color-mix(in srgb, var(--brand-primary) 22%, #D5D9DF);
+  --foreground:      color-mix(in srgb, var(--brand-primary) 25%, #0F1B2D);
+  --card-foreground: color-mix(in srgb, var(--brand-primary) 25%, #0F1B2D);
+  --popover-foreground: color-mix(in srgb, var(--brand-primary) 25%, #0F1B2D);
+  --muted-foreground: #4A6080;
+}
+
+/* ══════════════════════════════════════════
+   3. TEAM THEMES
+══════════════════════════════════════════ */
+[data-theme="alcance"] {
+  --brand-primary:       var(--burnt);
+  --brand-primary-light: var(--burnt-light);
+  --brand-primary-pale:  var(--burnt-pale);
+  --brand-secondary:     var(--crimson);
+  --brand-accent:        var(--lime);
+  --brand-accent-muted:  var(--lime-muted);
+  --brand-surface:       var(--burnt-dark);
+  --brand-gradient: linear-gradient(135deg,var(--crimson) 0%,var(--burnt) 60%,var(--amber) 100%);
+}
+[data-theme="cathering"] {
+  --brand-primary:       var(--amber);
+  --brand-primary-light: var(--amber-light);
+  --brand-primary-pale:  var(--amber-pale);
+  --brand-secondary:     var(--burnt-muted);
+  --brand-accent:        var(--teal);
+  --brand-accent-muted:  var(--teal-muted);
+  --brand-surface:       var(--amber-dark);
+  --brand-gradient: linear-gradient(135deg,var(--amber-dark) 0%,var(--amber) 60%,var(--amber-light) 100%);
+}
+[data-theme="central"] {
+  --brand-primary:       var(--navy);
+  --brand-primary-light: var(--navy-light);
+  --brand-primary-pale:  var(--navy-pale);
+  --brand-secondary:     var(--teal);
+  --brand-accent:        var(--lime);
+  --brand-accent-muted:  var(--lime-muted);
+  --brand-surface:       var(--navy-dark);
+  --brand-gradient: linear-gradient(135deg,var(--navy-dark) 0%,var(--navy) 60%,var(--navy-light) 100%);
+}
+[data-theme="creative"] {
+  --brand-primary:       var(--lime);
+  --brand-primary-light: var(--lime-light);
+  --brand-primary-pale:  var(--lime-pale);
+  --brand-secondary:     var(--burnt);
+  --brand-accent:        var(--crimson);
+  --brand-accent-muted:  var(--crimson-muted);
+  --brand-surface:       var(--lime-dark);
+  --brand-gradient: linear-gradient(135deg,var(--lime-dark) 0%,var(--lime) 60%,var(--lime-light) 100%);
+}
+[data-theme="danca"] {
+  --brand-primary:       var(--crimson);
+  --brand-primary-light: var(--crimson-light);
+  --brand-primary-pale:  var(--crimson-pale);
+  --brand-secondary:     var(--burnt);
+  --brand-accent:        var(--amber-light);
+  --brand-accent-muted:  var(--amber-muted);
+  --brand-surface:       var(--crimson-dark);
+  --brand-gradient: linear-gradient(135deg,var(--crimson-dark) 0%,var(--crimson) 50%,var(--burnt-light) 100%);
+}
+[data-theme="femininas"] {
+  --brand-primary:       var(--crimson-muted);
+  --brand-primary-light: var(--crimson-pale);
+  --brand-primary-pale:  #FDF0F0;
+  --brand-secondary:     var(--amber);
+  --brand-accent:        var(--lime-muted);
+  --brand-accent-muted:  var(--lime-pale);
+  --brand-surface:       var(--crimson-dark);
+  --brand-gradient: linear-gradient(135deg,var(--crimson) 0%,var(--crimson-muted) 50%,var(--amber-light) 100%);
+}
+[data-theme="filiais"] {
+  --brand-primary:       var(--teal);
+  --brand-primary-light: var(--teal-light);
+  --brand-primary-pale:  var(--teal-pale);
+  --brand-secondary:     var(--navy);
+  --brand-accent:        var(--amber);
+  --brand-accent-muted:  var(--amber-muted);
+  --brand-surface:       var(--teal-dark);
+  --brand-gradient: linear-gradient(135deg,var(--teal-dark) 0%,var(--teal) 60%,var(--teal-light) 100%);
+}
+[data-theme="horizonte"] {
+  --brand-primary:       var(--amber);
+  --brand-primary-light: var(--amber-light);
+  --brand-primary-pale:  var(--amber-pale);
+  --brand-secondary:     var(--burnt);
+  --brand-accent:        var(--lime);
+  --brand-accent-muted:  var(--lime-muted);
+  --brand-surface:       var(--amber-dark);
+  --brand-gradient: linear-gradient(135deg,var(--navy) 0%,var(--burnt) 40%,var(--amber-light) 100%);
+}
+[data-theme="link"] {
+  --brand-primary:       var(--teal-light);
+  --brand-primary-light: var(--teal-pale);
+  --brand-primary-pale:  #EAF5F4;
+  --brand-secondary:     var(--navy);
+  --brand-accent:        var(--lime);
+  --brand-accent-muted:  var(--lime-muted);
+  --brand-surface:       var(--teal-dark);
+  --brand-gradient: linear-gradient(135deg,var(--navy) 0%,var(--teal) 60%,var(--teal-light) 100%);
+}
+[data-theme="music"] {
+  --brand-primary:       var(--crimson);
+  --brand-primary-light: var(--crimson-light);
+  --brand-primary-pale:  var(--crimson-pale);
+  --brand-secondary:     var(--navy);
+  --brand-accent:        var(--lime);
+  --brand-accent-muted:  var(--lime-muted);
+  --brand-surface:       var(--crimson-dark);
+  --brand-gradient: linear-gradient(135deg,var(--navy-dark) 0%,var(--crimson) 60%,var(--burnt-light) 100%);
+}
+[data-theme="producao"] {
+  --brand-primary:       var(--navy-light);
+  --brand-primary-light: var(--navy-muted);
+  --brand-primary-pale:  var(--navy-pale);
+  --brand-secondary:     var(--teal);
+  --brand-accent:        var(--amber);
+  --brand-accent-muted:  var(--amber-muted);
+  --brand-surface:       var(--navy-dark);
+  --brand-gradient: linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-light) 60%,var(--teal-muted) 100%);
+}
+[data-theme="store"] {
+  --brand-primary:       var(--amber-light);
+  --brand-primary-light: var(--amber-pale);
+  --brand-primary-pale:  #FDFAF0;
+  --brand-secondary:     var(--burnt);
+  --brand-accent:        var(--teal);
+  --brand-accent-muted:  var(--teal-muted);
+  --brand-surface:       var(--amber-dark);
+  --brand-gradient: linear-gradient(135deg,var(--amber-dark) 0%,var(--amber) 50%,var(--amber-light) 100%);
+}
+[data-theme="teatro"] {
+  --brand-primary:       var(--crimson-dark);
+  --brand-primary-light: var(--crimson);
+  --brand-primary-pale:  var(--crimson-pale);
+  --brand-secondary:     var(--amber-dark);
+  --brand-accent:        var(--lime-muted);
+  --brand-accent-muted:  var(--lime-pale);
+  --brand-surface:       #1A0505;
+  --brand-gradient: linear-gradient(135deg,#1A0505 0%,var(--crimson-dark) 50%,var(--crimson) 100%);
+}
+[data-theme="welcome"] {
+  --brand-primary:       var(--teal);
+  --brand-primary-light: var(--teal-light);
+  --brand-primary-pale:  var(--teal-pale);
+  --brand-secondary:     var(--lime);
+  --brand-accent:        var(--amber-light);
+  --brand-accent-muted:  var(--amber-pale);
+  --brand-surface:       var(--teal-dark);
+  --brand-gradient: linear-gradient(135deg,var(--teal-dark) 0%,var(--teal) 50%,var(--lime-muted) 100%);
+}
+
+/* ══════════════════════════════════════════
+   4. ANIMATIONS
+══════════════════════════════════════════ */
+@keyframes ripple-wave {
+  0%   { width:0;     height:0;     opacity:1; border-width:2px; }
+  100% { width:400px; height:400px; opacity:0; border-width:1px; }
+}
+@keyframes slide-in-right {
+  from { transform:translateX(100%); opacity:0; }
+  to   { transform:translateX(0);    opacity:1; }
+}
+@keyframes slide-in-left {
+  from { transform:translateX(-100%); opacity:0; }
+  to   { transform:translateX(0);     opacity:1; }
+}
+@keyframes panel-in {
+  from { transform:translateX(100%); opacity:0; }
+  to   { transform:translateX(0);    opacity:1; }
+}
+
+/* Transição de página/aba */
+@keyframes page-in {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.animate-page-in {
+  animation: page-in 350ms cubic-bezier(0.25,0.8,0.25,1) both;
+}
+
+/* Flutuar (empty state) */
+@keyframes float {
+  0%,100% { transform:translateY(0); }
+  50%     { transform:translateY(-10px); }
+}
+.animate-float { animation: float 2.4s ease-in-out infinite; }
+
+/* Modais (base-ui) — animação de abertura */
+@keyframes dialog-overlay-in {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+@keyframes dialog-content-in {
+  from { opacity:0; transform:translate(-50%,-50%) scale(0.94); }
+  to   { opacity:1; transform:translate(-50%,-50%) scale(1); }
+}
+[data-slot="dialog-overlay"] {
+  animation: dialog-overlay-in 180ms ease both;
+}
+[data-slot="dialog-content"] {
+  animation: dialog-content-in 240ms cubic-bezier(0.25,0.8,0.25,1) both;
+}
+
+/* ══════════════════════════════════════════
+   5. SCROLL REVEAL
+══════════════════════════════════════════ */
+[data-reveal] {
+  opacity:0;
+  transition:opacity 700ms ease, transform 700ms ease;
+}
+[data-reveal="up"]    { transform:translateY(40px); }
+[data-reveal="down"]  { transform:translateY(-40px); }
+[data-reveal="left"]  { transform:translateX(-50px); }
+[data-reveal="right"] { transform:translateX(50px); }
+[data-reveal="zoom"]  { transform:scale(0.85); }
+[data-reveal="flip"]  { transform:perspective(600px) rotateX(25deg); }
+[data-reveal].revealed { opacity:1; transform:none; }
+
+/* ══════════════════════════════════════════
+   6. BASE
+══════════════════════════════════════════ */
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+}

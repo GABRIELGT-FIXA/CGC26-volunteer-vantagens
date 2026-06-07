@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  relationMode = "prisma"
+}
+
+// ─────────────────────────────────────────
+// USUÁRIOS
+// ─────────────────────────────────────────
+
+model User {
+  id               String   @id @default(uuid())
+  fullName         String
+  age              Int
+  phone            String   @unique
+  password         String
+  profilePhoto     String?
+  role             Role     @default(PARTICIPANT)
+  securityQuestion String
+  securityAnswer   String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  teams          UserTeam[]
+  participations Participation[]
+  campaigns      Campaign[]
+  news           News[]
+}
+
+enum Role {
+  ADMIN
+  PARTICIPANT
+}
+
+// ─────────────────────────────────────────
+// TIMES
+// ─────────────────────────────────────────
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  members        UserTeam[]
+  participations Participation[]
+}
+
+model UserTeam {
+  id       String   @id @default(uuid())
+  userId   String
+  teamId   String
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+}
+
+// ─────────────────────────────────────────
+// TAREFAS
+// ─────────────────────────────────────────
+
+model Task {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  points        Int      @default(1)
+  startTime     DateTime
+  endTime       DateTime
+  windowMinutes         Int      @default(10)
+  checkOutOffsetMinutes Int      @default(0) // 0 = abre no endTime; negativo = X min antes
+  createdAt             DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  participations Participation[]
+}
+
+// ─────────────────────────────────────────
+// PARTICIPAÇÕES
+// ─────────────────────────────────────────
+
+model Participation {
+  id            String              @id @default(uuid())
+  userId        String
+  taskId        String
+  teamId        String
+  checkInPhoto  String?
+  checkInTime   DateTime?
+  checkInValid  Boolean             @default(false)
+  checkOutPhoto String?
+  checkOutTime  DateTime?
+  checkOutValid Boolean             @default(false)
+  status        ParticipationStatus @default(PENDING)
+  pointsAwarded Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@unique([userId, taskId])
+}
+
+enum ParticipationStatus {
+  PENDING
+  CHECKED_IN
+  COMPLETED
+  INCOMPLETE
+}
+
+// ─────────────────────────────────────────
+// CAMPANHAS DE MENSAGEM
+// ─────────────────────────────────────────
+
+model Campaign {
+  id             String         @id @default(uuid())
+  name           String
+  message        String
+  scheduledAt    DateTime
+  status         CampaignStatus @default(SCHEDULED)
+  createdById    String
+  sentAt         DateTime?
+  recipientCount Int?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  createdBy User @relation(fields: [createdById], references: [id])
+}
+
+enum CampaignStatus {
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────
+// NOTÍCIAS
+// ─────────────────────────────────────────
+
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  image       String?  // path do arquivo
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User @relation(fields: [createdById], references: [id])
+}

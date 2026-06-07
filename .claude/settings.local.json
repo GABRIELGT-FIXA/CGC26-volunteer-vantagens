@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X POST https://evolution.gcsconsulting.com.br/message/sendText/a77fbb1c-6c26-4465-8a83-51b3e6320919 -H 'Content-Type: application/json' -H 'apikey: 184324FBFBE8-4D9A-A0BC-026FAE2AB1E5' -d '{\"number\":\"5521987620966\",\"text\":\"Oi! Teste do sistema Volunteer Vantagens 👋\"}')"
+    ]
+  }
+}
