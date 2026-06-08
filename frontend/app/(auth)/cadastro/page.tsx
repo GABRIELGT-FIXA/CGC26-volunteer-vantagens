@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,7 @@ function CadastroForm() {
   const phone = searchParams.get('phone') ?? '';
   const router = useRouter();
   const { login } = useAuthStore();
+  const queryClient = useQueryClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -137,6 +139,7 @@ function CadastroForm() {
       const loginRes = await api.post('/auth/login', { phone, password: form.password });
       const token = loginRes.data.accessToken;
       const me = await api.get('/users/me', { headers: { Authorization: `Bearer ${token}` } });
+      queryClient.clear(); // limpa cache de qualquer usuário anterior
       login(token, me.data);
       toast.success('Conta criada com sucesso!');
       router.replace('/dashboard');

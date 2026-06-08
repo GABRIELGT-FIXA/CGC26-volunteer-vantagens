@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ export default function EntrarPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   async function handleCheckPhone(e: React.FormEvent) {
@@ -41,6 +43,7 @@ export default function EntrarPage() {
       const res = await api.post('/auth/login', { phone: phone.replace(/\D/g, ''), password });
       const token = res.data.accessToken;
       const me = await api.get('/users/me', { headers: { Authorization: `Bearer ${token}` } });
+      queryClient.clear(); // limpa cache de qualquer usuário anterior
       login(token, me.data);
       router.replace(me.data.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard');
     } catch {

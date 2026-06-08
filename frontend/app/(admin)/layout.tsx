@@ -10,6 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
@@ -50,6 +51,7 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuthStore();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   async function handleLogout() {
     try { await api.post('/auth/logout'); } catch {}
+    queryClient.clear(); // limpa cache do usuário atual
     logout();
     toast.success('Sessão encerrada');
     router.replace('/entrar');

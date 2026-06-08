@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { Camera } from 'lucide-react';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ?? '';
@@ -16,6 +17,7 @@ const BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ?? '';
 export default function PerfilPage() {
   const { user, logout, setUser } = useAuthStore();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -83,6 +85,7 @@ export default function PerfilPage() {
 
   async function handleLogout() {
     try { await api.post('/auth/logout'); } catch {}
+    queryClient.clear(); // limpa cache do usuário atual
     logout();
     router.replace('/entrar');
   }
