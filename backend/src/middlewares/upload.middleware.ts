@@ -1,6 +1,6 @@
 import multer from 'multer';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { env } from '../config/env';
 import { ALLOWED_MIME_TYPES, MAX_UPLOAD_SIZE_MB } from '../config/constants';
 
@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, env.uploadDir),
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${uuidv4()}${ext}`);
+    cb(null, `${randomUUID()}${ext}`);
   },
 });
 
