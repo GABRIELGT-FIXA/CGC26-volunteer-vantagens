@@ -1,8 +1,12 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { randomUUID } from 'crypto';
 import { env } from '../config/env';
 import { ALLOWED_MIME_TYPES, MAX_UPLOAD_SIZE_MB } from '../config/constants';
+
+// Garante que a pasta de uploads exista (evita ENOENT em deploys novos)
+fs.mkdirSync(env.uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, env.uploadDir),
