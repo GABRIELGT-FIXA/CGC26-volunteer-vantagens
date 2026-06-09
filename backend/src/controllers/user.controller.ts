@@ -15,6 +15,10 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
   try { res.json(await userService.getMe(req.user!.userId)); } catch (e) { next(e); }
 }
 
+export async function getMyPoints(req: Request, res: Response, next: NextFunction) {
+  try { res.json(await userService.getMyPoints(req.user!.userId)); } catch (e) { next(e); }
+}
+
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   try {
     const data = z.object({
@@ -38,6 +42,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
       age: z.number().int().min(10).optional(),
       phone: z.string().min(10).optional(),
       teamIds: z.array(z.string().uuid()).optional(),
+      leaderTeamId: z.string().uuid().nullable().optional(),
     }).parse(req.body);
     const profilePhoto = req.file ? `/uploads/${req.file.filename}` : undefined;
     res.json(await userService.updateUser(req.params.id as string, { ...data, ...(profilePhoto ? { profilePhoto } : {}) }));

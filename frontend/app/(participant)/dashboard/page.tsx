@@ -9,7 +9,7 @@ import { Reveal } from '@/components/shared/Reveal';
 import { UpcomingDays } from '@/components/shared/UpcomingDays';
 import { NewsFeed } from '@/components/shared/NewsFeed';
 import { EmptyState } from '@/components/shared/EmptyState';
-import type { Task, Participation } from '@/types';
+import type { Task, Participation, MyPoints } from '@/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -29,8 +29,15 @@ export default function DashboardPage() {
     refetchInterval: 30_000,
   });
 
+  const { data: myPoints } = useQuery<MyPoints>({
+    queryKey: ['my-points'],
+    queryFn: () => api.get('/users/me/points').then((r) => r.data),
+    refetchInterval: 30_000,
+  });
+
   const participationMap = new Map(myParticipations?.map((p) => [p.taskId, p]) ?? []);
-  const totalPoints = myParticipations?.reduce((acc, p) => acc + p.pointsAwarded, 0) ?? 0;
+  const totalPoints = myPoints?.total ?? 0;
+  const bonusPoints = myPoints?.bonusPoints ?? 0;
 
   return (
     <div className="space-y-6">
@@ -42,6 +49,9 @@ export default function DashboardPage() {
             <span className="text-4xl font-bold drop-shadow">{totalPoints}</span>
             <span className="text-white/80 text-sm">pontos acumulados</span>
           </div>
+          {bonusPoints > 0 && (
+            <p className="text-xs text-white/70">inclui {bonusPoints} pts de bônus</p>
+          )}
           {user?.teams.length ? (
             <p className="text-xs text-white/70">
               {user.teams.map((ut) => ut.team.name).join(' • ')}

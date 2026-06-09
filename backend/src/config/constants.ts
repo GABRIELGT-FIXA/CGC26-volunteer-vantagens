@@ -12,6 +12,9 @@ export const SECURITY_QUESTIONS = [
 export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const MAX_UPLOAD_SIZE_MB = 5;
 
+export const ALL_CHALLENGES_POINTS = 650;
+export const LEADER_EVALUATION_MAX = 650;
+
 export const WHATSAPP_VARIABLES = [
   '{{taskName}}',
   '{{date}}',

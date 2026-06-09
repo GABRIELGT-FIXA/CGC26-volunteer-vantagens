@@ -8,6 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/me', ctrl.getMe);
+router.get('/me/points', ctrl.getMyPoints);
 router.put('/me/photo', upload.single('photo'), ctrl.updateMyPhoto);
 router.put('/me/password', ctrl.updateMyPassword);
 

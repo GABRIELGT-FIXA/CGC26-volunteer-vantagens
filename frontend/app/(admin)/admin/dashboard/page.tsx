@@ -33,7 +33,7 @@ export default function AdminDashboardPage() {
   });
 
   const participants = users?.filter((u) => u.role === 'PARTICIPANT').length ?? 0;
-  const teams = Array.from(new Set(users?.flatMap((u) => u.teams.map((t) => t.teamId)) ?? [])).length;
+  const teams = Array.from(new Set(users?.flatMap((u) => (u.teams ?? []).map((t) => t.teamId)) ?? [])).length;
 
   const loading = lu || lt;
 

@@ -1,5 +1,6 @@
 import prisma from '../config/prisma';
 import { isCheckInOpen, isCheckOutOpen } from '../utils/windows';
+import { checkAllChallengesBonus } from './bonus.service';
 
 export async function checkIn(taskId: string, userId: string, teamId: string | null, photoFilename: string) {
   const task = await prisma.task.findUnique({ where: { id: taskId } });
@@ -41,7 +42,7 @@ export async function checkOut(taskId: string, userId: string, photoFilename: st
   const checkOutValid = isCheckOutOpen(task.endTime, task.windowMinutes, task.checkOutOffsetMinutes);
   const bothValid = participation.checkInValid && checkOutValid;
 
-  return prisma.participation.update({
+  const updated = await prisma.participation.update({
     where: { id: participation.id },
     data: {
       checkOutPhoto: `/uploads/${photoFilename}`,
@@ -52,6 +53,11 @@ export async function checkOut(taskId: string, userId: string, photoFilename: st
     },
     include: { task: true, team: true },
   });
+
+  // Credita o bônus de "todos os desafios" se este foi o último a concluir
+  await checkAllChallengesBonus(userId, participation.teamId);
+
+  return updated;
 }
 
 export async function getMyParticipations(userId: string) {

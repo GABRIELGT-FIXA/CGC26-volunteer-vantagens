@@ -24,9 +24,25 @@ export interface User {
   phone: string;
   profilePhoto: string | null;
   role: Role;
+  leaderTeamId: string | null;
+  leaderTeam?: { id: string; name: string } | null;
   createdAt: string;
   teams: UserTeam[];
   participations?: Participation[];
+}
+
+export interface MyPoints {
+  participationPoints: number;
+  bonusPoints: number;
+  total: number;
+  bonuses: { type: 'LEADER_EVALUATION' | 'ALL_CHALLENGES'; points: number }[];
+}
+
+export interface LeaderMember {
+  id: string;
+  fullName: string;
+  profilePhoto: string | null;
+  evaluation: number | null;
 }
 
 export interface Task {

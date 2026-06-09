@@ -4,11 +4,11 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import Link from 'next/link';
-import { LayoutDashboard, ListChecks, Trophy, User } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Trophy, User, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NewNewsWatcher } from '@/components/shared/NewNewsWatcher';
 
-const NAV = [
+const BASE_NAV = [
   { href: '/dashboard', label: 'Início', icon: LayoutDashboard },
   { href: '/tarefas', label: 'Tarefas', icon: ListChecks },
   { href: '/ranking', label: 'Ranking', icon: Trophy },
@@ -18,6 +18,11 @@ const NAV = [
 export default function ParticipantLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
   const router = useRouter();
+
+  // Líderes ganham o item "Avaliação"
+  const NAV = user?.leaderTeamId
+    ? [...BASE_NAV.slice(0, 3), { href: '/avaliacao', label: 'Avaliar', icon: Star }, BASE_NAV[3]]
+    : BASE_NAV;
   const pathname = usePathname();
 
   useEffect(() => {

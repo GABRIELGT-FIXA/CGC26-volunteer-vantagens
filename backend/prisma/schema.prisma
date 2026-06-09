@@ -26,10 +26,15 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  // Liderança: se preenchido, o usuário é líder deste time
+  leaderTeamId String?
+  leaderTeam   Team?   @relation("TeamLeader", fields: [leaderTeamId], references: [id])
+
   teams          UserTeam[]
   participations Participation[]
   campaigns      Campaign[]
   news           News[]
+  bonuses        PointBonus[]    @relation("UserBonuses")
 }
 
 enum Role {
@@ -48,6 +53,8 @@ model Team {
 
   members        UserTeam[]
   participations Participation[]
+  leaders        User[]          @relation("TeamLeader")
+  bonuses        PointBonus[]
 }
 
 model UserTeam {
@@ -156,4 +163,29 @@ model News {
   updatedAt   DateTime @updatedAt
 
   createdBy User @relation(fields: [createdById], references: [id])
+}
+
+// ─────────────────────────────────────────
+// PONTOS DE BÔNUS (fora das tarefas)
+// ─────────────────────────────────────────
+
+model PointBonus {
+  id          String    @id @default(uuid())
+  userId      String
+  teamId      String    // time que recebe os pontos (ranking por time)
+  type        BonusType
+  points      Int
+  createdById String?   // quem creditou (líder/admin) ou null se automático
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation("UserBonuses", fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@unique([userId, type]) // um bônus de cada tipo por usuário
+}
+
+enum BonusType {
+  LEADER_EVALUATION // avaliação do líder (0–650)
+  ALL_CHALLENGES    // cumpriu todos os desafios (650)
 }

@@ -14,6 +14,7 @@ import participationRoutes from './routes/participation.routes';
 import rankingRoutes from './routes/ranking.routes';
 import campaignRoutes from './routes/campaign.routes';
 import newsRoutes from './routes/news.routes';
+import leaderRoutes from './routes/leader.routes';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/participations', participationRoutes);
 app.use('/api/rankings', rankingRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/leader', leaderRoutes);
 
 app.use(errorHandler);
 

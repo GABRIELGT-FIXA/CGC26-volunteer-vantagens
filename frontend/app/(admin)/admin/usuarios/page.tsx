@@ -75,6 +75,7 @@ export default function UsuariosAdminPage() {
   const [editName, setEditName] = useState('');
   const [editAge, setEditAge] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [editLeaderTeamId, setEditLeaderTeamId] = useState<string>('');
   const [saving, setSaving] = useState(false);
 
   const { data: users, isLoading } = useQuery<User[]>({
@@ -127,6 +128,7 @@ export default function UsuariosAdminPage() {
     setEditAge(String(u.age));
     setEditPhone(u.phone);
     setEditTeamIds(u.teams.map((t) => t.teamId));
+    setEditLeaderTeamId(u.leaderTeamId ?? '');
   }
 
   async function handleEdit(e: React.FormEvent) {
@@ -139,6 +141,7 @@ export default function UsuariosAdminPage() {
         age: Number(editAge),
         phone: editPhone,
         teamIds: editTeamIds,
+        leaderTeamId: editLeaderTeamId || null,
       });
       qc.invalidateQueries({ queryKey: ['admin-users'] });
       toast.success('Usuário atualizado');
@@ -309,6 +312,19 @@ export default function UsuariosAdminPage() {
             <div className="space-y-2">
               <Label>Times</Label>
               <TeamToggle teams={teams} selected={editTeamIds} onChange={setEditTeamIds} />
+            </div>
+            <div className="space-y-2">
+              <Label>Líder do time</Label>
+              <Select value={editLeaderTeamId || 'none'} onValueChange={(v) => setEditLeaderTeamId(!v || v === 'none' ? '' : v)}>
+                <SelectTrigger><SelectValue placeholder="Não é líder" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Não é líder</SelectItem>
+                  {teams.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>Líder de {t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Líder pode avaliar os membros do time escolhido.</p>
             </div>
             <Button type="submit" className="w-full" disabled={saving}>
               {saving ? 'Salvando...' : 'Salvar alterações'}

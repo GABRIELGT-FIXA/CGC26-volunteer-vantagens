@@ -5,8 +5,9 @@ const SALT_ROUNDS = 12;
 
 const userSelect = {
   id: true, fullName: true, age: true, phone: true,
-  profilePhoto: true, role: true, createdAt: true,
+  profilePhoto: true, role: true, leaderTeamId: true, createdAt: true,
   teams: { include: { team: true } },
+  leaderTeam: { select: { id: true, name: true } },
 };
 
 export async function listUsers() {
@@ -59,7 +60,8 @@ export async function createUser(data: {
 }
 
 export async function updateUser(id: string, data: {
-  fullName?: string; age?: number; phone?: string; profilePhoto?: string; teamIds?: string[];
+  fullName?: string; age?: number; phone?: string; profilePhoto?: string;
+  teamIds?: string[]; leaderTeamId?: string | null;
 }) {
   await getUser(id);
 
@@ -77,6 +79,31 @@ export async function updateUser(id: string, data: {
 export async function deleteUser(id: string) {
   await getUser(id);
   await prisma.user.delete({ where: { id } });
+}
+
+// Total de pontos do usuário: participações concluídas + bônus
+export async function getMyPoints(userId: string) {
+  const part = await prisma.participation.aggregate({
+    where: { userId, status: 'COMPLETED' },
+    _sum: { pointsAwarded: true },
+  });
+  const bonus = await prisma.pointBonus.aggregate({
+    where: { userId },
+    _sum: { points: true },
+  });
+  const bonuses = await prisma.pointBonus.findMany({
+    where: { userId },
+    select: { type: true, points: true },
+  });
+
+  const participationPoints = part._sum.pointsAwarded ?? 0;
+  const bonusPoints = bonus._sum.points ?? 0;
+  return {
+    participationPoints,
+    bonusPoints,
+    total: participationPoints + bonusPoints,
+    bonuses,
+  };
 }
 
 export async function updatePhoto(userId: string, filename: string) {
