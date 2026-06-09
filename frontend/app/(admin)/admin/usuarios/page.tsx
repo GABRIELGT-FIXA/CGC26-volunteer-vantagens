@@ -61,6 +61,7 @@ function TeamToggle({ teams, selected, onChange }: {
 const emptyCreate = {
   fullName: '', age: '', phone: '', password: '',
   securityQuestion: '', securityAnswer: '', teamIds: [] as string[],
+  role: 'PARTICIPANT' as 'PARTICIPANT' | 'ADMIN',
 };
 
 export default function UsuariosAdminPage() {
@@ -110,6 +111,7 @@ export default function UsuariosAdminPage() {
         securityQuestion: createForm.securityQuestion,
         securityAnswer: createForm.securityAnswer,
         teamIds: createForm.teamIds,
+        role: createForm.role,
       });
       qc.invalidateQueries({ queryKey: ['admin-users'] });
       toast.success('Usuário criado');
@@ -376,6 +378,17 @@ export default function UsuariosAdminPage() {
                 selected={createForm.teamIds}
                 onChange={(ids) => setCreateForm((p) => ({ ...p, teamIds: ids }))}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Papel</Label>
+              <Select value={createForm.role} onValueChange={(v) => v && setCreateForm((p) => ({ ...p, role: v as 'PARTICIPANT' | 'ADMIN' }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PARTICIPANT">Participante</SelectItem>
+                  <SelectItem value="ADMIN">Admin (auditor)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Admin tem acesso ao painel e à auditoria de fotos.</p>
             </div>
             <Button type="submit" className="w-full" disabled={saving || !createForm.securityQuestion}>
               {saving ? 'Criando...' : 'Criar usuário'}

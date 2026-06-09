@@ -76,6 +76,7 @@ export interface Participation {
   checkOutValid: boolean;
   status: ParticipationStatus;
   pointsAwarded: number;
+  reviewed: boolean;
   createdAt: string;
   task: Task;
   team: Pick<Team, 'id' | 'name'>;

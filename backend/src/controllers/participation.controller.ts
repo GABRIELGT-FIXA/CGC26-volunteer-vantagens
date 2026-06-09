@@ -29,3 +29,17 @@ export async function updatePoints(req: Request, res: Response, next: NextFuncti
     res.json(await participationService.updatePoints(req.params.id as string, points));
   } catch (e) { next(e); }
 }
+
+export async function listForAudit(req: Request, res: Response, next: NextFunction) {
+  try {
+    const status = req.query.status as string | undefined;
+    res.json(await participationService.listForAudit({ status }));
+  } catch (e) { next(e); }
+}
+
+export async function reviewParticipation(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { consider } = z.object({ consider: z.boolean() }).parse(req.body);
+    res.json(await participationService.reviewParticipation(req.params.id as string, consider));
+  } catch (e) { next(e); }
+}

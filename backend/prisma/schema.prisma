@@ -105,6 +105,7 @@ model Participation {
   checkOutValid Boolean             @default(false)
   status        ParticipationStatus @default(PENDING)
   pointsAwarded Int                 @default(0)
+  reviewed      Boolean             @default(false) // auditada por um admin
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 

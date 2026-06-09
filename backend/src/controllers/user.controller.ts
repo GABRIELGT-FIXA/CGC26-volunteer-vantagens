@@ -29,6 +29,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       securityQuestion: z.enum(SECURITY_QUESTIONS as [string, ...string[]]),
       securityAnswer: z.string().min(1),
       teamIds: z.array(z.string().uuid()).default([]),
+      role: z.enum(['ADMIN', 'PARTICIPANT']).default('PARTICIPANT'),
     }).parse(req.body);
     const profilePhoto = req.file ? `/uploads/${req.file.filename}` : undefined;
     res.status(201).json(await userService.createUser({ ...data, profilePhoto }));
@@ -43,6 +44,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
       phone: z.string().min(10).optional(),
       teamIds: z.array(z.string().uuid()).optional(),
       leaderTeamId: z.string().uuid().nullable().optional(),
+      role: z.enum(['ADMIN', 'PARTICIPANT']).optional(),
     }).parse(req.body);
     const profilePhoto = req.file ? `/uploads/${req.file.filename}` : undefined;
     res.json(await userService.updateUser(req.params.id as string, { ...data, ...(profilePhoto ? { profilePhoto } : {}) }));

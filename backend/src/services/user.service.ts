@@ -38,7 +38,7 @@ export async function getMe(userId: string) {
 export async function createUser(data: {
   fullName: string; age: number; phone: string; password: string;
   securityQuestion: string; securityAnswer: string; teamIds: string[];
-  profilePhoto?: string;
+  profilePhoto?: string; role?: 'ADMIN' | 'PARTICIPANT';
 }) {
   const existing = await prisma.user.findUnique({ where: { phone: data.phone } });
   if (existing) throw Object.assign(new Error('Telefone já cadastrado'), { status: 409 });
@@ -53,6 +53,7 @@ export async function createUser(data: {
       fullName: data.fullName, age: data.age, phone: data.phone,
       password: hashedPassword, profilePhoto: data.profilePhoto,
       securityQuestion: data.securityQuestion, securityAnswer: hashedAnswer,
+      role: data.role ?? 'PARTICIPANT',
       teams: { create: data.teamIds.map((teamId) => ({ teamId })) },
     },
     select: userSelect,
@@ -61,7 +62,7 @@ export async function createUser(data: {
 
 export async function updateUser(id: string, data: {
   fullName?: string; age?: number; phone?: string; profilePhoto?: string;
-  teamIds?: string[]; leaderTeamId?: string | null;
+  teamIds?: string[]; leaderTeamId?: string | null; role?: 'ADMIN' | 'PARTICIPANT';
 }) {
   await getUser(id);
 

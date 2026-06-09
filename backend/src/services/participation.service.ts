@@ -73,3 +73,50 @@ export async function updatePoints(participationId: string, points: number) {
   if (!p) throw Object.assign(new Error('Participação não encontrada'), { status: 404 });
   return prisma.participation.update({ where: { id: participationId }, data: { pointsAwarded: points } });
 }
+
+// === AUDITORIA ===
+
+// Lista todas as participações que têm ao menos uma foto, para auditoria
+export async function listForAudit(filters: { status?: string }) {
+  const where: Record<string, unknown> = {
+    OR: [{ checkInPhoto: { not: null } }, { checkOutPhoto: { not: null } }],
+  };
+
+  if (filters.status === 'pending') where.reviewed = false;
+  if (filters.status === 'considered') { where.reviewed = true; where.pointsAwarded = { gt: 0 }; }
+  if (filters.status === 'disconsidered') { where.reviewed = true; where.pointsAwarded = 0; }
+
+  return prisma.participation.findMany({
+    where,
+    include: {
+      user: { select: { id: true, fullName: true, profilePhoto: true } },
+      task: { select: { id: true, name: true, points: true } },
+      team: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+// Considerar (conta os pontos da tarefa) ou desconsiderar (zera) uma participação
+export async function reviewParticipation(participationId: string, consider: boolean) {
+  const p = await prisma.participation.findUnique({
+    where: { id: participationId },
+    include: { task: { select: { points: true } } },
+  });
+  if (!p) throw Object.assign(new Error('Participação não encontrada'), { status: 404 });
+
+  return prisma.participation.update({
+    where: { id: participationId },
+    data: {
+      reviewed: true,
+      checkInValid: consider,
+      checkOutValid: consider,
+      pointsAwarded: consider ? p.task.points : 0,
+    },
+    include: {
+      user: { select: { id: true, fullName: true, profilePhoto: true } },
+      task: { select: { id: true, name: true, points: true } },
+      team: { select: { id: true, name: true } },
+    },
+  });
+}
