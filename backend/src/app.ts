@@ -18,6 +18,10 @@ import leaderRoutes from './routes/leader.routes';
 
 const app = express();
 
+// Atrás do Nginx/Cloudflare: confia no primeiro proxy para ler o IP real
+// (necessário para o express-rate-limit funcionar com X-Forwarded-For)
+app.set('trust proxy', 1);
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
