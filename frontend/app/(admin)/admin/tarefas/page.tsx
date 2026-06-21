@@ -59,12 +59,14 @@ type FormState = {
   startTime: string; endTime: string; windowMinutes: string;
   checkOutMode: 'AT_END' | 'BEFORE_END';
   checkOutBeforeMinutes: string;
+  singlePhoto: boolean;
 };
 
 const emptyForm: FormState = {
   name: '', description: '', points: '1',
   startTime: '', endTime: '', windowMinutes: '10',
   checkOutMode: 'AT_END', checkOutBeforeMinutes: '10',
+  singlePhoto: false,
 };
 
 function taskStatus(task: Task): { label: string; variant: 'default' | 'secondary' | 'destructive' } {
@@ -80,7 +82,7 @@ function TaskForm({ form, loading, editing, onChange, onSubmit }: {
   form: FormState;
   loading: boolean;
   editing: boolean;
-  onChange: (key: string, value: string) => void;
+  onChange: (key: string, value: string | boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
 }) {
   return (
@@ -111,7 +113,23 @@ function TaskForm({ form, loading, editing, onChange, onSubmit }: {
         <Label>Fim</Label>
         <Input type="datetime-local" value={form.endTime} onChange={(e) => onChange('endTime', e.target.value)} required />
       </div>
-      {/* Checkout mode */}
+
+      {/* Foto única */}
+      <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-border p-3">
+        <input
+          type="checkbox"
+          checked={form.singlePhoto}
+          onChange={(e) => onChange('singlePhoto', e.target.checked)}
+          className="h-4 w-4 accent-primary"
+        />
+        <span className="text-sm">
+          <span className="font-medium">Foto única</span>
+          <span className="text-muted-foreground"> — conclui com 1 foto (sem check-out)</span>
+        </span>
+      </label>
+
+      {/* Checkout mode (só para tarefas de 2 fotos) */}
+      {!form.singlePhoto && (
       <div className="space-y-2">
         <Label>Abertura do Check-out</Label>
         <div className="grid grid-cols-2 gap-2">
@@ -142,13 +160,20 @@ function TaskForm({ form, loading, editing, onChange, onSubmit }: {
           </div>
         )}
       </div>
+      )}
 
       {form.startTime && form.endTime && (
         <p className="text-xs text-muted-foreground bg-muted rounded p-2">
-          Check-in: {form.startTime.slice(11)} → +{form.windowMinutes}min &nbsp;|&nbsp;
-          Check-out: {form.checkOutMode === 'BEFORE_END'
-            ? `${form.endTime.slice(11)} -${form.checkOutBeforeMinutes}min`
-            : form.endTime.slice(11)} → +{form.windowMinutes}min
+          {form.singlePhoto ? (
+            <>Foto única: {form.startTime.slice(11)} → +{form.windowMinutes}min (1 foto conclui)</>
+          ) : (
+            <>
+              Check-in: {form.startTime.slice(11)} → +{form.windowMinutes}min &nbsp;|&nbsp;
+              Check-out: {form.checkOutMode === 'BEFORE_END'
+                ? `${form.endTime.slice(11)} -${form.checkOutBeforeMinutes}min`
+                : form.endTime.slice(11)} → +{form.windowMinutes}min
+            </>
+          )}
         </p>
       )}
       <Button type="submit" className="w-full" disabled={loading}>
@@ -171,7 +196,7 @@ export default function TarefasAdminPage() {
     queryFn: () => api.get('/tasks').then((r) => r.data),
   });
 
-  function handleChange(key: string, value: string) {
+  function handleChange(key: string, value: string | boolean) {
     setForm((p) => ({ ...p, [key]: value }));
   }
 
@@ -197,6 +222,7 @@ export default function TarefasAdminPage() {
       endTime: new Date(form.endTime).toISOString(),
       windowMinutes: Number(form.windowMinutes),
       checkOutOffsetMinutes,
+      singlePhoto: form.singlePhoto,
     };
     try {
       if (openEdit) {
@@ -285,6 +311,7 @@ export default function TarefasAdminPage() {
                       windowMinutes: String(task.windowMinutes),
                       checkOutMode: task.checkOutOffsetMinutes < 0 ? 'BEFORE_END' : 'AT_END',
                       checkOutBeforeMinutes: String(Math.abs(task.checkOutOffsetMinutes) || 10),
+                      singlePhoto: task.singlePhoto,
                     });
                     setOpenEdit(task);
                   }}>

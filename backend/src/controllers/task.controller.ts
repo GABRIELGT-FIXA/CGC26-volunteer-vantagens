@@ -28,6 +28,7 @@ export async function createTask(req: Request, res: Response, next: NextFunction
       endTime: z.coerce.date(),
       windowMinutes: z.number().int().min(1).default(10),
       checkOutOffsetMinutes: z.number().int().default(0),
+      singlePhoto: z.boolean().default(false),
     }).parse(req.body);
     res.status(201).json(await taskService.createTask(data));
   } catch (e) { next(e); }
@@ -43,6 +44,7 @@ export async function updateTask(req: Request, res: Response, next: NextFunction
       endTime: z.coerce.date().optional(),
       windowMinutes: z.number().int().min(1).optional(),
       checkOutOffsetMinutes: z.number().int().optional(),
+      singlePhoto: z.boolean().optional(),
     }).parse(req.body);
     res.json(await taskService.updateTask(req.params.id as string, data));
   } catch (e) { next(e); }

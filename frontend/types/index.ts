@@ -54,6 +54,7 @@ export interface Task {
   endTime: string;
   windowMinutes: number;
   checkOutOffsetMinutes: number;
+  singlePhoto: boolean;
   createdAt: string;
 }
 

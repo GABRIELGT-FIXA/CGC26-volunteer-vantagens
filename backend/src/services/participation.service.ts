@@ -1,6 +1,7 @@
 import prisma from '../config/prisma';
 import { isCheckInOpen, isCheckOutOpen } from '../utils/windows';
-import { checkAllChallengesBonus } from './bonus.service';
+import { singlePhotoOutcome, reviewOutcome } from '../utils/scoring';
+import { recomputeAllChallengesBonus } from './bonus.service';
 
 export async function checkIn(taskId: string, userId: string, teamId: string | null, photoFilename: string) {
   const task = await prisma.task.findUnique({ where: { id: taskId } });
@@ -19,6 +20,25 @@ export async function checkIn(taskId: string, userId: string, teamId: string | n
   }
   if (!resolvedTeamId) throw Object.assign(new Error('Usuário não pertence a nenhum time'), { status: 400 });
 
+  // Tarefa de foto única: a foto conclui a tarefa (sem check-out)
+  if (task.singlePhoto) {
+    const r = singlePhotoOutcome(checkInValid, task.points);
+    const created = await prisma.participation.create({
+      data: {
+        userId, taskId, teamId: resolvedTeamId,
+        checkInPhoto: `/uploads/${photoFilename}`,
+        checkInTime: new Date(),
+        checkInValid: r.checkInValid,
+        checkOutValid: r.checkOutValid,
+        status: r.status,
+        pointsAwarded: r.pointsAwarded,
+      },
+      include: { task: true, team: true },
+    });
+    await recomputeAllChallengesBonus(userId, resolvedTeamId);
+    return created;
+  }
+
   return prisma.participation.create({
     data: {
       userId, taskId, teamId: resolvedTeamId,
@@ -34,6 +54,10 @@ export async function checkIn(taskId: string, userId: string, teamId: string | n
 export async function checkOut(taskId: string, userId: string, photoFilename: string) {
   const task = await prisma.task.findUnique({ where: { id: taskId } });
   if (!task) throw Object.assign(new Error('Tarefa não encontrada'), { status: 404 });
+
+  if (task.singlePhoto) {
+    throw Object.assign(new Error('Esta tarefa é de foto única; não há check-out.'), { status: 400 });
+  }
 
   const participation = await prisma.participation.findUnique({ where: { userId_taskId: { userId, taskId } } });
   if (!participation) throw Object.assign(new Error('Check-in não realizado'), { status: 409 });
@@ -54,8 +78,8 @@ export async function checkOut(taskId: string, userId: string, photoFilename: st
     include: { task: true, team: true },
   });
 
-  // Credita o bônus de "todos os desafios" se este foi o último a concluir
-  await checkAllChallengesBonus(userId, participation.teamId);
+  // Recalcula o bônus de "todos os desafios"
+  await recomputeAllChallengesBonus(userId, participation.teamId);
 
   return updated;
 }
@@ -97,7 +121,7 @@ export async function listForAudit(filters: { status?: string }) {
   });
 }
 
-// Considerar (conta os pontos da tarefa) ou desconsiderar (zera) uma participação
+// Aprovar (credita os pontos da tarefa) ou reprovar (zera) uma participação
 export async function reviewParticipation(participationId: string, consider: boolean) {
   const p = await prisma.participation.findUnique({
     where: { id: participationId },
@@ -105,13 +129,15 @@ export async function reviewParticipation(participationId: string, consider: boo
   });
   if (!p) throw Object.assign(new Error('Participação não encontrada'), { status: 404 });
 
-  return prisma.participation.update({
+  const r = reviewOutcome(consider, p.task.points);
+
+  const updated = await prisma.participation.update({
     where: { id: participationId },
     data: {
       reviewed: true,
-      checkInValid: consider,
-      checkOutValid: consider,
-      pointsAwarded: consider ? p.task.points : 0,
+      checkInValid: r.valid,
+      checkOutValid: r.valid,
+      pointsAwarded: r.pointsAwarded,
     },
     include: {
       user: { select: { id: true, fullName: true, profilePhoto: true } },
@@ -119,4 +145,9 @@ export async function reviewParticipation(participationId: string, consider: boo
       team: { select: { id: true, name: true } },
     },
   });
+
+  // Aprovar/reprovar pode mudar o cumprimento de "todos os desafios"
+  await recomputeAllChallengesBonus(p.userId, p.teamId);
+
+  return updated;
 }

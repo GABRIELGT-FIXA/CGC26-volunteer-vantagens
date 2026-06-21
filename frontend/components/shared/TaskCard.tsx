@@ -99,7 +99,7 @@ export function TaskCard({ task, participation }: Props) {
           className="w-full"
           onClick={() => router.push(`/tarefas/${task.id}/${canCheckIn ? 'checkin' : 'checkout'}`)}
         >
-          {canCheckIn ? 'Registrar Chegada 📸' : 'Registrar Saída 📸'}
+          {task.singlePhoto ? 'Registrar foto 📸' : canCheckIn ? 'Registrar Chegada 📸' : 'Registrar Saída 📸'}
         </Button>
       )}
     </div>

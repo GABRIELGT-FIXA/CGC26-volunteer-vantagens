@@ -21,8 +21,8 @@ type Filter = 'all' | 'pending' | 'considered' | 'disconsidered';
 const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: 'Todas' },
   { key: 'pending', label: 'Pendentes' },
-  { key: 'considered', label: 'Consideradas' },
-  { key: 'disconsidered', label: 'Desconsideradas' },
+  { key: 'considered', label: 'Aprovadas' },
+  { key: 'disconsidered', label: 'Reprovadas' },
 ];
 
 export default function AuditoriaPage() {
@@ -40,7 +40,7 @@ export default function AuditoriaPage() {
     setActingId(id);
     try {
       await api.put(`/participations/${id}/review`, { consider });
-      toast.success(consider ? 'Participação considerada' : 'Participação desconsiderada');
+      toast.success(consider ? 'Participação aprovada' : 'Participação reprovada');
       qc.invalidateQueries({ queryKey: ['audit'] });
       qc.invalidateQueries({ queryKey: ['ranking-individual'] });
       qc.invalidateQueries({ queryKey: ['ranking-teams'] });
@@ -51,15 +51,15 @@ export default function AuditoriaPage() {
 
   function statusBadge(p: Participation) {
     if (!p.reviewed) return <Badge variant="secondary">Pendente</Badge>;
-    if (p.pointsAwarded > 0) return <Badge>Considerada · {p.pointsAwarded} pts</Badge>;
-    return <Badge variant="destructive">Desconsiderada</Badge>;
+    if (p.pointsAwarded > 0) return <Badge>Aprovada · {p.pointsAwarded} pts</Badge>;
+    return <Badge variant="destructive">Reprovada</Badge>;
   }
 
   return (
     <div className="space-y-5">
       <div>
         <h2 className="font-bold text-xl">Auditoria de fotos</h2>
-        <p className="text-sm text-muted-foreground">Revise as fotos de check-in e check-out e considere ou desconsidere cada participação.</p>
+        <p className="text-sm text-muted-foreground">Revise as fotos e aprove (credita os pontos) ou reprove (zera os pontos) cada participação.</p>
       </div>
 
       {/* Filtros */}
@@ -113,7 +113,7 @@ export default function AuditoriaPage() {
                   disabled={actingId === p.id}
                   onClick={() => review(p.id, true)}
                 >
-                  <Check size={15} className="mr-1" /> Considerar
+                  <Check size={15} className="mr-1" /> Aprovar
                 </Button>
                 <Button
                   size="sm" variant="outline"
@@ -121,7 +121,7 @@ export default function AuditoriaPage() {
                   disabled={actingId === p.id}
                   onClick={() => review(p.id, false)}
                 >
-                  <X size={15} className="mr-1" /> Desconsiderar
+                  <X size={15} className="mr-1" /> Reprovar
                 </Button>
               </div>
             </div>

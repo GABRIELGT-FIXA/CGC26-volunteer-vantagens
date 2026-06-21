@@ -101,7 +101,22 @@ export function ActivitySheet({ task, participation, open, onClose }: Props) {
           )}
 
           {/* Ações */}
-          {!completed && (
+          {!completed && task.singlePhoto && (
+            <div className="space-y-2">
+              {canCheckIn ? (
+                <Button className="w-full" onClick={() => { onClose(); router.push(`/tarefas/${task.id}/checkin`); }}>
+                  <LogIn size={16} className="mr-2" /> Registrar foto
+                </Button>
+              ) : (
+                <Button variant="outline" className="w-full opacity-60 cursor-not-allowed" disabled>
+                  <Lock size={14} className="mr-2" /> Foto — {checkInReason()}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Ações — tarefa de 2 fotos */}
+          {!completed && !task.singlePhoto && (
             <div className="space-y-2">
               {/* Check-in */}
               {canCheckIn ? (

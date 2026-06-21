@@ -82,6 +82,7 @@ model Task {
   endTime       DateTime
   windowMinutes         Int      @default(10)
   checkOutOffsetMinutes Int      @default(0) // 0 = abre no endTime; negativo = X min antes
+  singlePhoto           Boolean  @default(false) // true = conclui com 1 foto (sem check-out)
   createdAt             DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

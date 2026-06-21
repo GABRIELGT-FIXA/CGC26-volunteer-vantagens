@@ -2,10 +2,12 @@ import prisma from '../config/prisma';
 import { isCheckInOpen, isCheckOutOpen } from '../utils/windows';
 import { scheduleTaskJobs, cancelTaskJobs } from '../jobs/task.jobs';
 import { dayBoundsInTz } from '../utils/timezone';
+import { recomputeAllChallengesBonus } from './bonus.service';
 
 const taskSelect = {
   id: true, name: true, description: true, points: true,
-  startTime: true, endTime: true, windowMinutes: true, checkOutOffsetMinutes: true, createdAt: true,
+  startTime: true, endTime: true, windowMinutes: true, checkOutOffsetMinutes: true,
+  singlePhoto: true, createdAt: true,
 };
 
 export async function listTasks(filters: { date?: string; status?: string }) {
@@ -43,13 +45,15 @@ export async function getWindowStatus(id: string) {
   return {
     task,
     checkInOpen: isCheckInOpen(task.startTime, task.windowMinutes),
-    checkOutOpen: isCheckOutOpen(task.endTime, task.windowMinutes, task.checkOutOffsetMinutes),
+    // Foto única não tem check-out
+    checkOutOpen: task.singlePhoto ? false : isCheckOutOpen(task.endTime, task.windowMinutes, task.checkOutOffsetMinutes),
   };
 }
 
 export async function createTask(data: {
   name: string; description?: string; points: number;
   startTime: Date; endTime: Date; windowMinutes: number;
+  checkOutOffsetMinutes?: number; singlePhoto?: boolean;
 }) {
   const task = await prisma.task.create({ data, select: taskSelect });
   scheduleTaskJobs(task);
@@ -59,13 +63,32 @@ export async function createTask(data: {
 export async function updateTask(id: string, data: {
   name?: string; description?: string; points?: number;
   startTime?: Date; endTime?: Date; windowMinutes?: number;
+  checkOutOffsetMinutes?: number; singlePhoto?: boolean;
 }) {
   const task = await getTask(id);
   const updated = await prisma.task.update({ where: { id }, data, select: taskSelect });
+
   if (data.startTime || data.endTime || data.windowMinutes) {
     cancelTaskJobs(id);
     scheduleTaskJobs(updated);
   }
+
+  // Virou foto única: toda participação que já tem a 1ª foto (check-in) é
+  // marcada como válida e concluída, computando os pontos.
+  if (data.singlePhoto === true && !task.singlePhoto) {
+    const pending = await prisma.participation.findMany({
+      where: { taskId: id, checkInPhoto: { not: null }, status: { not: 'COMPLETED' } },
+      select: { id: true, userId: true, teamId: true },
+    });
+    for (const p of pending) {
+      await prisma.participation.update({
+        where: { id: p.id },
+        data: { status: 'COMPLETED', checkInValid: true, checkOutValid: true, pointsAwarded: updated.points },
+      });
+      await recomputeAllChallengesBonus(p.userId, p.teamId);
+    }
+  }
+
   return updated;
 }
 
