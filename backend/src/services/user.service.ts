@@ -85,7 +85,7 @@ export async function deleteUser(id: string) {
 // Total de pontos do usuário: participações concluídas + bônus
 export async function getMyPoints(userId: string) {
   const part = await prisma.participation.aggregate({
-    where: { userId, status: 'COMPLETED' },
+    where: { userId, pointsAwarded: { gt: 0 } },
     _sum: { pointsAwarded: true },
   });
   const bonus = await prisma.pointBonus.aggregate({

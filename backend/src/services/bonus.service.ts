@@ -8,7 +8,7 @@ export async function recomputeAllChallengesBonus(userId: string, fallbackTeamId
   const totalTasks = await prisma.task.count();
 
   const validCompleted = await prisma.participation.count({
-    where: { userId, status: 'COMPLETED', pointsAwarded: { gt: 0 } },
+    where: { userId, pointsAwarded: { gt: 0 } },
   });
 
   const existing = await prisma.pointBonus.findUnique({

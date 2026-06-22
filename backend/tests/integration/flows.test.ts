@@ -102,6 +102,39 @@ describe('Auditoria controla os pontos', () => {
     pts = await api('/users/me/points', 'GET', userToken);
     expect(pts.data.participationPoints).toBe(100);
   });
+
+  it('aprovar participação só com check-in faz a pessoa aparecer no ranking', async () => {
+    const teamId = created.teams[0];
+    const userId = await createUser(`9${stamp}04`, 'IT SoCheckin', teamId);
+    const userToken = await login(`9${stamp}04`, '123456');
+
+    // tarefa de 2 fotos; participante faz SÓ o check-in (status CHECKED_IN, 0 pts)
+    const task = await api('/tasks', 'POST', adminToken, {
+      name: `IT SoCheckin ${stamp}`, points: 120,
+      startTime: isoMinutesFromNow(-2), endTime: isoMinutesFromNow(120),
+      windowMinutes: 60, checkOutOffsetMinutes: 0,
+    });
+    created.tasks.push(task.data.id);
+
+    const ci = await sendPhoto(`/participations/${task.data.id}/checkin`, userToken, { teamId });
+    expect(ci.data.status).toBe('CHECKED_IN');
+    expect(ci.data.pointsAwarded).toBe(0);
+
+    // não aparece no ranking ainda (0 pontos)
+    let rank = await api('/rankings/individual', 'GET', adminToken);
+    expect(rank.data.find((e: { user?: { id: string } }) => e.user?.id === userId)).toBeFalsy();
+
+    // admin aprova na auditoria
+    const audit = await api('/participations/audit', 'GET', adminToken);
+    const part = audit.data.find((p: { user: { id: string } }) => p.user.id === userId);
+    await api(`/participations/${part.id}/review`, 'PUT', adminToken, { consider: true });
+
+    // agora DEVE aparecer no ranking com os 120 pontos, mesmo sem check-out
+    rank = await api('/rankings/individual', 'GET', adminToken);
+    const entry = rank.data.find((e: { user?: { id: string }; totalPoints: number }) => e.user?.id === userId);
+    expect(entry).toBeTruthy();
+    expect(entry.totalPoints).toBe(120);
+  });
 });
 
 describe('Tarefa de foto única', () => {

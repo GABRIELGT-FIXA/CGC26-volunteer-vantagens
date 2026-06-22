@@ -1,10 +1,12 @@
 import prisma from '../config/prisma';
 
 export async function individualRanking() {
-  // Pontos de participações concluídas, por usuário
+  // Soma os pontos creditados por usuário. Não filtra por status: o pointsAwarded
+  // é a fonte da verdade (0 se pendente/reprovado, >0 se aprovado/válido) — assim
+  // participações aprovadas na auditoria contam mesmo sem check-out.
   const partByUser = await prisma.participation.groupBy({
     by: ['userId'],
-    where: { status: 'COMPLETED' },
+    where: { pointsAwarded: { gt: 0 } },
     _sum: { pointsAwarded: true },
   });
 
@@ -38,7 +40,7 @@ export async function individualRanking() {
 export async function teamsRanking() {
   const partByTeam = await prisma.participation.groupBy({
     by: ['teamId'],
-    where: { status: 'COMPLETED' },
+    where: { pointsAwarded: { gt: 0 } },
     _sum: { pointsAwarded: true },
   });
 

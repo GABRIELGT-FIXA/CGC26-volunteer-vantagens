@@ -5,6 +5,12 @@ import { initCampaignJobs } from './jobs/campaign.jobs';
 
 app.listen(env.port, async () => {
   console.log(`Server running on port ${env.port}`);
-  await initTaskJobs();
-  await initCampaignJobs();
+  // Agendamento de jobs não deve derrubar o servidor se o banco estiver
+  // temporariamente indisponível no boot (ex: cold start do Neon).
+  try {
+    await initTaskJobs();
+    await initCampaignJobs();
+  } catch (e) {
+    console.error('[Jobs] Falha ao agendar no boot (seguindo sem derrubar):', (e as Error).message);
+  }
 });
