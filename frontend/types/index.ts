@@ -38,11 +38,24 @@ export interface MyPoints {
   bonuses: { type: 'LEADER_EVALUATION' | 'ALL_CHALLENGES'; points: number }[];
 }
 
-export interface LeaderMember {
+export interface Votable {
   id: string;
   fullName: string;
   profilePhoto: string | null;
-  evaluation: number | null;
+  teams: string[];
+  status: 'available' | 'mine' | 'locked';
+  points: number | null;
+  evaluatedBy: string | null;
+}
+
+export interface EvaluationRow {
+  pessoa: string;
+  pessoaId: string;
+  profilePhoto: string | null;
+  time: string;
+  lider: string;
+  nota: number;
+  data: string;
 }
 
 export interface Task {

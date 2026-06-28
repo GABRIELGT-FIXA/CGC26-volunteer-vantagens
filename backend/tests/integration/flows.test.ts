@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 // Requer: backend rodando + banco acessível. Rode com: npm run test:int
 // Cria entidades únicas e limpa tudo no final.
 
-const BASE = 'http://localhost:3001/api';
+const BASE = process.env.TEST_BASE || 'http://localhost:3001/api';
 const stamp = Date.now().toString().slice(-7);
 
 let adminToken = '';
@@ -184,5 +184,60 @@ describe('Converter tarefa para foto única', () => {
 
     const pts = await api('/users/me/points', 'GET', userToken);
     expect(pts.data.participationPoints).toBe(300);
+  });
+});
+
+describe('Votação do líder (cross-team, 1 voto por pessoa, primeiro fica)', () => {
+  it('líder vota em outro time; outro líder é bloqueado; remover libera; admin vê tudo', async () => {
+    const teamA = created.teams[0];
+    const tB = await api('/teams', 'POST', adminToken, { name: `__ITb_${stamp}__` });
+    created.teams.push(tB.data.id);
+    const teamB = tB.data.id;
+
+    // dois líderes (A no teamA, B no teamB) e um alvo no teamB
+    const leaderAId = await createUser(`9${stamp}10`, 'Lider A', teamA);
+    const leaderBId = await createUser(`9${stamp}11`, 'Lider B', teamB);
+    const targetId = await createUser(`9${stamp}12`, 'Alvo B', teamB);
+    await api(`/users/${leaderAId}`, 'PUT', adminToken, { leaderTeamId: teamA });
+    await api(`/users/${leaderBId}`, 'PUT', adminToken, { leaderTeamId: teamB });
+
+    const tokenA = await login(`9${stamp}10`, '123456');
+    const tokenB = await login(`9${stamp}11`, '123456');
+
+    // votáveis: líder A enxerga o alvo (de outro time) com o time dele
+    const votables = await api('/leader/votables', 'GET', tokenA);
+    const targetRow = votables.data.people.find((p: { id: string }) => p.id === targetId);
+    expect(targetRow).toBeTruthy();
+    expect(targetRow.teams.length).toBeGreaterThan(0); // mostra o time
+    expect(targetRow.status).toBe('available');
+
+    // líder A vota no alvo (cross-team) com nota 500
+    const v = await api('/leader/evaluate', 'POST', tokenA, { userId: targetId, points: 500 });
+    expect(v.status).toBe(200);
+
+    // líder B tenta votar no mesmo alvo -> 409 (já votado)
+    const blocked = await api('/leader/evaluate', 'POST', tokenB, { userId: targetId, points: 600 });
+    expect(blocked.status).toBe(409);
+
+    // ranking: alvo aparece com 500 e o time dele (teamB) recebe os pontos
+    const ri = await api('/rankings/individual', 'GET', adminToken);
+    expect(ri.data.find((e: { user?: { id: string }; totalPoints: number }) => e.user?.id === targetId)?.totalPoints).toBe(500);
+    const rt = await api('/rankings/teams', 'GET', adminToken);
+    expect((rt.data.find((e: { team?: { id: string }; totalPoints: number }) => e.team?.id === teamB)?.totalPoints ?? 0)).toBeGreaterThanOrEqual(500);
+
+    // admin vê a votação na verificação
+    const all = await api('/leader/all-evaluations', 'GET', adminToken);
+    expect(all.data.find((x: { pessoaId: string }) => x.pessoaId === targetId)).toBeTruthy();
+
+    // participante comum não acessa votáveis -> 403
+    const partTok = await login(`9${stamp}12`, '123456');
+    const forbidden = await api('/leader/votables', 'GET', partTok);
+    expect(forbidden.status).toBe(403);
+
+    // líder A remove o próprio voto -> alvo fica disponível -> líder B consegue votar
+    const del = await api(`/leader/evaluate/${targetId}`, 'DELETE', tokenA);
+    expect(del.status).toBe(204);
+    const nowB = await api('/leader/evaluate', 'POST', tokenB, { userId: targetId, points: 300 });
+    expect(nowB.status).toBe(200);
   });
 });

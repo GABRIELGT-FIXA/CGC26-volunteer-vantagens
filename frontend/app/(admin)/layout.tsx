@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import Link from 'next/link';
 import {
-  LayoutDashboard, Users, Shield, ListChecks, Trophy, MessageSquare, Newspaper, ImageIcon, LogOut, Menu,
+  LayoutDashboard, Users, Shield, ListChecks, Trophy, MessageSquare, Newspaper, ImageIcon, Star, LogOut, Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
@@ -21,6 +21,7 @@ const NAV = [
   { href: '/admin/times', label: 'Times', icon: Shield },
   { href: '/admin/tarefas', label: 'Tarefas', icon: ListChecks },
   { href: '/admin/auditoria', label: 'Auditoria', icon: ImageIcon },
+  { href: '/admin/avaliacoes', label: 'Avaliações', icon: Star },
   { href: '/admin/campanhas', label: 'Campanhas', icon: MessageSquare },
   { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
   { href: '/admin/ranking', label: 'Rankings', icon: Trophy },
