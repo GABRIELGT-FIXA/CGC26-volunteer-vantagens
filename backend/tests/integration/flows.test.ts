@@ -240,4 +240,29 @@ describe('Votação do líder (cross-team, 1 voto por pessoa, primeiro fica)', (
     const nowB = await api('/leader/evaluate', 'POST', tokenB, { userId: targetId, points: 300 });
     expect(nowB.status).toBe(200);
   });
+
+  it('cada líder tem 1 voto só: votar em outra pessoa transfere (libera a anterior)', async () => {
+    const teamA = created.teams[0];
+    const leaderId = await createUser(`9${stamp}20`, 'Lider 1voto', teamA);
+    const p1 = await createUser(`9${stamp}21`, 'Pessoa 1', teamA);
+    const p2 = await createUser(`9${stamp}22`, 'Pessoa 2', teamA);
+    await api(`/users/${leaderId}`, 'PUT', adminToken, { leaderTeamId: teamA });
+    const token = await login(`9${stamp}20`, '123456');
+
+    // vota na pessoa 1
+    expect((await api('/leader/evaluate', 'POST', token, { userId: p1, points: 400 })).status).toBe(200);
+    let votes = await api('/leader/evaluations', 'GET', token);
+    expect(votes.data.length).toBe(1);
+    expect(votes.data[0].pessoaId).toBe(p1);
+
+    // vota na pessoa 2 -> transfere (pessoa 1 fica disponível, só 1 voto ativo)
+    expect((await api('/leader/evaluate', 'POST', token, { userId: p2, points: 500 })).status).toBe(200);
+    votes = await api('/leader/evaluations', 'GET', token);
+    expect(votes.data.length).toBe(1);
+    expect(votes.data[0].pessoaId).toBe(p2);
+
+    const votables = await api('/leader/votables', 'GET', token);
+    expect(votables.data.people.find((p: { id: string }) => p.id === p1)?.status).toBe('available');
+    expect(votables.data.people.find((p: { id: string }) => p.id === p2)?.status).toBe('mine');
+  });
 });

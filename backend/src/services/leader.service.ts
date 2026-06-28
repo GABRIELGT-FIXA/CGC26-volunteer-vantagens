@@ -58,7 +58,8 @@ export async function getVotables(leaderId: string) {
 }
 
 // Líder vota/avalia uma pessoa (qualquer time), nota 0–650.
-// Regra: 1 voto por pessoa; o primeiro líder fica com ela (outro recebe 409).
+// Regras: cada líder tem APENAS 1 voto (votar em outra pessoa transfere);
+// e cada pessoa recebe no máximo 1 voto — o primeiro líder fica (outro recebe 409).
 export async function evaluate(leaderId: string, targetUserId: string, points: number) {
   await requireLeaderTeam(leaderId);
 
@@ -86,6 +87,15 @@ export async function evaluate(leaderId: string, targetUserId: string, points: n
   });
   if (existing && existing.createdById !== leaderId) {
     throw Object.assign(new Error('Esta pessoa já foi votada por outro líder'), { status: 409 });
+  }
+
+  // Cada líder tem APENAS 1 voto: se já votou em outra pessoa, o voto é transferido
+  // (remove o anterior e cria o novo), liberando a pessoa anterior.
+  const myCurrent = await prisma.pointBonus.findFirst({
+    where: { type: 'LEADER_EVALUATION', createdById: leaderId },
+  });
+  if (myCurrent && myCurrent.userId !== targetUserId) {
+    await prisma.pointBonus.delete({ where: { id: myCurrent.id } });
   }
 
   return prisma.pointBonus.upsert({

@@ -52,6 +52,8 @@ export default function AvaliacaoPage() {
     });
   }, [data, search, teamFilter]);
 
+  const myVote = useMemo(() => data?.people.find((p) => p.status === 'mine'), [data]);
+
   async function vote(id: string) {
     const raw = drafts[id];
     const points = Number(raw);
@@ -96,8 +98,19 @@ export default function AvaliacaoPage() {
         <h2 className="font-bold text-xl flex items-center gap-2">
           <Star size={20} className="text-primary" /> Votação
         </h2>
-        <p className="text-sm text-muted-foreground">Vote em quem quiser (qualquer time), nota de 0 a {MAX}. Cada pessoa recebe 1 voto só.</p>
+        <p className="text-sm text-muted-foreground">Você tem <strong>1 voto</strong>. Escolha uma pessoa de qualquer time e dê uma nota de 0 a {MAX}.</p>
       </div>
+
+      {myVote ? (
+        <div className="rounded-xl border border-primary/40 bg-primary/10 p-3 text-sm flex items-center gap-2">
+          <Star size={16} className="text-primary shrink-0" />
+          <span>Seu voto: <strong>{myVote.fullName}</strong> · nota <strong>{myVote.points}</strong>. Votar em outra pessoa transfere o voto.</span>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+          Você ainda não votou. Use o campo ao lado da pessoa para registrar seu voto.
+        </div>
+      )}
 
       {/* Busca + filtro */}
       <div className="space-y-2">
